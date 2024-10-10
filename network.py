@@ -1,7 +1,8 @@
-from socket import gethostbyname
+import socket
 from sys import argv, exit
-import re, os
+import re, os, socket
 from psutil import net_if_addrs
+from datetime import datetime
 
 
 #===== VERIFS =====
@@ -34,16 +35,17 @@ def lookup(target:str)->str:
         - python network.py lookup <URL> : To lookup over URL
     """
     if not isURL(target):
-        return "Argument non valide !"
-    return gethostbyname(target)
+        raise ValueError("Bad argument !")
+    return socket.gethostbyname(target)
 
 
 def ping(target:str)->str:
     """
         - python network.py ping <IPv4> : To ping an IPv4
     """
-    if isIPv4(target):
-        return "Argument non valide !"
+
+    if not isIPv4(target):
+        raise ValueError("Bad argument !")
 
     response = os.system(f"ping {target} -c 1 > /dev/null")
     return "UP !" if response == 0 else "DOWN !"
@@ -72,21 +74,44 @@ def ip()->str:
     cidr_mask = maskToCIDR(mask)
     return f"{ip}/{cidr_mask}\n{2**(32-cidr_mask)}"
 
-result = ""
+def getLogMessage(cmd:str, arg:str, isError=False):
+    now = datetime.now()
+    dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
+    if isError:
+        return f"{dt_string} [ERROR] Command {cmd} called with bad arguments : {arg}.\n"
+    return f"{dt_string} [INFO] Command {cmd} called successfully [with argument {arg}].\n"
+
+
 AVAILABLE_COMMAND = {
     "lookup": lookup,
     "ping": ping,
     "ip": ip
 }
-if len(argv)>=2:
-    if(argv[1]) not in list(AVAILABLE_COMMAND.keys()):
-        result = (f"'{argv[1]}' is not an available command. Déso.")
-    else:
-        if(argv[1]=="ip"):
-            result = AVAILABLE_COMMAND[argv[1]]()
+LOG_DIR = "/tmp/network_tp3"
+LOG_FILE = "network.txt"
 
-        elif len(argv)<=2:
-            result =AVAILABLE_COMMAND[argv[1]].__doc__
-        else:
-            result = AVAILABLE_COMMAND[argv[1]](argv[2])
+result = ""
+log_file_path = os.path.join(LOG_DIR,LOG_FILE)
+os.makedirs(LOG_DIR, exist_ok=True)
+
+logFile = open(log_file_path, "a")
+
+if len(argv)>=2:
+    CMD = argv[1]
+    ARG = argv[2] if len(argv)>=3 else None
+
+    if(CMD) not in list(AVAILABLE_COMMAND.keys()):
+        result = (f"'{CMD}' is not an available command. Déso.")
+    else:
+        try :
+            if CMD == "ip":
+                result = AVAILABLE_COMMAND[CMD]()
+            else:
+                result = AVAILABLE_COMMAND[CMD](ARG)
+            logFile.write(getLogMessage(CMD, ARG))
+        except Exception as error:
+            result = error
+            logFile.write(getLogMessage(CMD, ARG, True))
+    
+logFile.close()
 print(result)

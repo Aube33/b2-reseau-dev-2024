@@ -3,3 +3,5 @@
 ## I. Ping
 
 ## II. DNS
+
+### III. Get your IP

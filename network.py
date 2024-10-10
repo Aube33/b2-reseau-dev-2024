@@ -79,7 +79,11 @@ def getLogMessage(cmd:str, arg:str, isError=False):
     dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
     if isError:
         return f"{dt_string} [ERROR] Command {cmd} called with bad arguments : {arg}.\n"
-    return f"{dt_string} [INFO] Command {cmd} called successfully [with argument {arg}].\n"
+    
+    if arg == None:
+        return f"{dt_string} [INFO] Command {cmd} called successfully.\n"
+    else:
+        return f"{dt_string} [INFO] Command {cmd} called successfully [with argument {arg}].\n"
 
 
 AVAILABLE_COMMAND = {

@@ -83,7 +83,7 @@ def getLogMessage(cmd:str, arg:str, isError=False):
     if arg == None:
         return f"{dt_string} [INFO] Command {cmd} called successfully.\n"
     else:
-        return f"{dt_string} [INFO] Command {cmd} called successfully [with argument {arg}].\n"
+        return f"{dt_string} [INFO] Command {cmd} called successfully with argument {arg}.\n"
 
 
 AVAILABLE_COMMAND = {

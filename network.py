@@ -65,14 +65,18 @@ def ip()->str:
     """
     interfaces_data = net_if_addrs()
     ip = mask = ""
+    hasWiFiInt = False
 
     for name, addrs in interfaces_data.items():
         if(isWifiInterface(name)):
+            hasWiFiInt = True
             ip = addrs[0].address
             mask = addrs[0].netmask
             break
-    cidr_mask = maskToCIDR(mask)
-    return f"{ip}/{cidr_mask}\n{2**(32-cidr_mask)}"
+    if hasWiFiInt:
+        cidr_mask = maskToCIDR(mask)
+        return f"{ip}/{cidr_mask}\n{2**(32-cidr_mask)}"
+    return "WiFi interface not found !"
 
 def getLogMessage(cmd:str, arg:str, isError=False):
     now = datetime.now()
